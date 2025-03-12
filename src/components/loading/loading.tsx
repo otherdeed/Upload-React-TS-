@@ -4,11 +4,13 @@ import { IoIosClose } from 'react-icons/io';
 type Props = {
     file: File | null;
     nameFile: string;
+    resetFile: () => void;
 };
 
-export const Loading = ({ 
-    file, 
+export const Loading = ({
+    file,
     nameFile,
+    resetFile
 }: Props) => {
     const [progress, setProgress] = useState(0);
     useEffect(() => {
@@ -32,11 +34,15 @@ export const Loading = ({
             {
                 progress === 100 ? (
                     <>
-                        <div className="absolute right-0 top-0.5">
+                        <div className="absolute right-0 top-0.5" onClick={resetFile}>
                             <IoIosClose className="text-indigo-500 w-8 h-8 cursor-pointer" />
                         </div>
                         <div className="text-indigo-500 absolute top-1 left-15 text-xl">
-                            {`${nameFile}.${file?.name.split('.').pop()}`}
+                            {
+                                nameFile.length === 0
+                                    ? (<span className='text-sm text-red-400'>Дайте имя файлу</span>)
+                                    : `${nameFile}.${file?.name.split('.').pop()}`
+                            }
                         </div>
                         <div className="h-8 w-10 bg-indigo-500 absolute left-1 rounded-xl flex items-center justify-center">
                             <span className="text-white"></span>
@@ -53,7 +59,7 @@ export const Loading = ({
                                 <span className="text-white"></span>
                             </div>
                             <div className="text-indigo-500 absolute top-1 left-15 text-sm">
-                                {`${nameFile}.${file?.name.split('.').pop()}`}
+                                загрузка
                             </div>
                         </div>
                         <div className="flex absolute top-7 left-13 items-center space-x-4">

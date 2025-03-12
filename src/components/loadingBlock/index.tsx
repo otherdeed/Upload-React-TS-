@@ -8,25 +8,20 @@ import { Loading } from '../loading/loading'
 import {type ErrorData, validateError } from '../error/error'
 export const LoadingBlock = () => {
     const [file, setFile] = useState<File | null>(null);
+    const [errorSizeFile, setErrorSizeFile] = useState('')
     const [helpText, setHelpText] = useState('Перед загрузкой дайте имя файлу')
     const [value, setValue] = useState<string>('')
     const [responseData, setResponseData] = useState<any>(null)
     const [error, setError] = useState<ErrorData | null>(null)
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if(file){
-            return null
-        }
         setValue(e.target.value)
     }
     const clearValue = () => {
-        if(file){
-            return null
-        }
         setValue('')
     }
     const hadleUploadFile = async () => {
-        if (file) {
+        if (file && value.length !== 0 && errorSizeFile.length === 0) {
             setIsLoading(true)
             try {
                 const formData = new FormData()
@@ -43,7 +38,6 @@ export const LoadingBlock = () => {
                         },
                     }
                 );
-                console.log(res)
                 setResponseData(res.data)
             } catch (error) {
                 console.log(validateError(error));
@@ -59,6 +53,9 @@ export const LoadingBlock = () => {
         setResponseData(null)
         setError(null)
     }
+    const resetFile = () => {
+        setFile(null)  
+    }
     useEffect(() => {
         if (value.length === 0) {
             setHelpText('Перед загрузкой дайте имя файлу')
@@ -68,6 +65,9 @@ export const LoadingBlock = () => {
         }
         if (file && value.length > 0) {
             setHelpText('Загрузите ваш файл')
+        }
+        if(file && value.length === 0) {
+            setHelpText('Дайте имя файлу')
         }
     }, [value, file])
     if (error) {
@@ -79,8 +79,9 @@ export const LoadingBlock = () => {
                 <div className="text-center mt-8 text-xl text-white">
                     Ошибка при загрузки файла
                 </div>
-                <div className="text-center mt-5 text-white my-2">
-                    {JSON.stringify(error, null, 2)}
+                <div className="text-center flex flex-col mt-5 text-white my-2">
+                    <span>Error:{error.status} Bad Request</span>
+                    <span>"{error.data}"</span>
                 </div>
             </div>
         )
@@ -94,8 +95,11 @@ export const LoadingBlock = () => {
                 <div className="text-center mt-8 text-xl text-white">
                     Файл успешно загружен
                 </div>
-                <div className="text-center mt-5 text-white my-2">
-                    {JSON.stringify(responseData, null, 2)}
+                <div className="text-start flex flex-col mt-5 text-white my-2 ml-5">
+                    <span>name: {value}</span>
+                    <span>filename: {`${file?.name.split('.').pop()}`}</span>
+                    <span>timestamp: {responseData.timestamp.split('T')[1].split('.')[0]}</span>
+                    <span>message: {responseData.message}</span>
                 </div>
             </div>
         )
@@ -112,9 +116,9 @@ export const LoadingBlock = () => {
                 {helpText}
             </div>
             <Input valueIsNull={value.length > 0} clearValue={clearValue} handleChange={handleChange} placeholder='Название файла' value={value} />
-            <UploadFile value={value} file={file} setFile={setFile} />
-            {file && <Loading nameFile={value} file={file} />}
-            <Button hadleUploadFile={hadleUploadFile} isLoading={isLoading} text='Загрузить' />
+            <UploadFile errorSizeFile={errorSizeFile} setErrorSizeFile={setErrorSizeFile} value={value} file={file} setFile={setFile} />
+            {file && errorSizeFile.length === 0 && <Loading resetFile={resetFile} nameFile={value} file={file} />}
+            <Button value={value} file={file} hadleUploadFile={hadleUploadFile} isLoading={isLoading} text='Загрузить' />
         </div>
     )
 }
